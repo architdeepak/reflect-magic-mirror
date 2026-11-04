@@ -1,0 +1,33 @@
+.birthday-stage { position:absolute; inset:0; z-index:40; overflow:hidden; color:#78465e; background:radial-gradient(ellipse at 50% 28%,#fffdf6 0%,#fff0f6 46%,#efebff 100%); font-family:Manrope,sans-serif; pointer-events:auto; isolation:isolate; }
+.birthday-stage[hidden]{display:none}
+#app-shell[data-birthday="true"][data-birthday-phase="active"] > :not(.birthday-stage):not(#camera-feed) { visibility:hidden!important; }
+.birthday-cloud { position:absolute; width:75%; height:36%; border-radius:50%; background:#f9d6eb; opacity:.5; filter:blur(55px); pointer-events:none; }
+.birthday-cloud-one{left:-35%;top:20%;background:#e0d8ff}.birthday-cloud-two{right:-35%;bottom:12%;background:#ffdfc6}
+.birthday-card{position:absolute;inset:4% 7% 6%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:2;animation:birthday-card-in .9s .4s both cubic-bezier(.2,.8,.3,1.2)}
+.birthday-card h1{font:700 clamp(40px,9.5cqw,128px)/1.2 Georgia,serif;letter-spacing:-.035em;color:#a25077;margin:0;text-shadow:0 3px 0 #fff}
+.birthday-card h1 span{font-size:1.22em;color:#b571ad}
+.birthday-age{position:relative;display:flex;align-items:center;justify-content:center;margin:3vh 0 0;gap:.015em;font:800 clamp(112px,28cqw,360px)/1 Manrope,sans-serif;letter-spacing:-.06em;color:#e8a3c6;filter:drop-shadow(0 8px 0 #ce82b0) drop-shadow(0 17px 10px #b87aaf22)}
+.birthday-age span:first-child{rotate:-7deg}.birthday-age span:nth-child(2){rotate:7deg;color:#bfa8ec}.birthday-age i{position:absolute;right:-20%;top:-15%;color:#e8bb63;font:normal .24em Georgia;animation:birthday-twinkle 2.4s 4 both}
+.birthday-cake{width:clamp(180px,44cqw,560px);height:auto;max-height:24vh;overflow:visible;margin:1vh 0}
+.birthday-balloon{position:absolute;left:var(--x);bottom:-25%;width:clamp(95px,var(--size),210px);height:auto;opacity:0;transform-origin:50% 75%;animation:birthday-float var(--duration) var(--delay) 2 both ease-in-out;filter:drop-shadow(0 9px 7px #c794b522);z-index:1}
+.birthday-balloon svg{display:block;width:100%;height:auto}
+.birthday-confetti i{position:absolute;top:-4%;left:var(--x);width:9px;height:15px;background:var(--color);border-radius:var(--round);animation:birthday-confetti var(--fall) var(--delay) 3 both linear;opacity:0;z-index:3}
+.birthday-close{position:absolute;bottom:24px;right:24px;z-index:5;padding:12px 17px;border:1px solid #c59bb344;border-radius:999px;background:#fff9;color:#a17992;font:600 12px Manrope,sans-serif;cursor:pointer;min-height:44px}.birthday-close:hover{background:#fff}.birthday-close span{padding-left:10px}
+@keyframes birthday-float{0%{opacity:0;translate:0 0;rotate:calc(var(--tilt)*-1)}8%{opacity:1}50%{translate:calc(var(--sway)*22px) -65cqh;rotate:var(--tilt)}92%{opacity:1}100%{opacity:0;translate:calc(var(--sway)*-16px) -145cqh;rotate:calc(var(--tilt)*-1)}}
+@keyframes birthday-confetti{0%{opacity:0;translate:0 0;rotate:0deg}8%,85%{opacity:.85}100%{opacity:0;translate:var(--drift) 110cqh;rotate:var(--turn)}}
+@keyframes birthday-card-in{from{opacity:0;translate:0 20px;scale:.94}to{opacity:1;translate:0 0;scale:1}}
+@keyframes birthday-twinkle{0%,100%{scale:1;opacity:.7}50%{scale:1.2;opacity:1}}
+.birthday-stage[data-reduced="true"] * {animation:none!important}.birthday-stage[data-reduced="true"] .birthday-balloon{opacity:.9;bottom:auto;top:8%;}.birthday-stage[data-reduced="true"] .birthday-balloon:nth-child(3n){top:65%}.birthday-stage[data-reduced="true"] .birthday-balloon:nth-child(3n+1){top:38%}
+@container (max-width:480px){.birthday-card{inset:4% 6% 12%}.birthday-close{bottom:12px;right:12px;font-size:10px}}
+@media(prefers-reduced-motion:reduce){.birthday-stage *{animation:none!important}.birthday-balloon{opacity:.7;bottom:auto;top:12%}}
+
+/* Crossfade over the live mirror instead of cutting to or from black. */
+.birthday-stage[data-phase="entering"] { animation:birthday-stage-in .8s both ease; }
+.birthday-stage[data-phase="leaving"] { pointer-events:none; animation:birthday-stage-out .85s both cubic-bezier(.4,0,.2,1); }
+.birthday-stage[data-phase="leaving"] .birthday-card { animation:birthday-card-out .7s both ease; }
+@keyframes birthday-stage-in { from { opacity:0; } to { opacity:1; } }
+@keyframes birthday-stage-out { from { opacity:1; } to { opacity:0; } }
+@keyframes birthday-card-out { to { opacity:0; translate:0 -12px; scale:.98; } }
+.birthday-stage[data-reduced="true"][data-phase] { animation:none; }
+
+.birthday-close { width:44px; height:44px; padding:0; border-radius:50%; font-size:18px; }

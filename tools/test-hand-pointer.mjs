@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import { HandPointer } from '../src/handPointer.js';
+const classes=()=>({values:new Set(),add(x){this.values.add(x)},remove(x){this.values.delete(x)}});
+let hits=0;const target={disabled:false,classList:classes(),getClientRects:()=>[{}],click:()=>hits++};
+globalThis.document={createElement:()=>({classList:classes(),style:{}}),elementFromPoint:()=>({closest:()=>target})};
+const pointer=new HandPointer({append(){},getBoundingClientRect:()=>({left:0,top:0})});
+const hand=()=>{const h=Array.from({length:21},()=>({x:.5,y:.6}));h[0]={x:.5,y:.8};h[5]={x:.42,y:.58};h[17]={x:.6,y:.58};h[6]={x:.42,y:.5};h[8]={x:.42,y:.25};h[4]={x:.25,y:.5};return h};
+let h=hand();const g={enabled:true,hand:h,lastSampleAt:1000};const update=now=>{g.lastSampleAt=now;pointer.update({gestures:g,video:{videoWidth:640,videoHeight:480},viewport:{width:640,height:480},hidden:false,now})};
+update(1000);assert.equal(pointer.target,target);assert(target.classList.values.has('hand-hover'));update(1200);
+h[4]={...h[8]};update(1250);update(1500);assert.equal(hits,1,'Held pinch repeated a click');assert(pointer.consume('pinch',1500));assert(!pointer.consume('palm',1500));
+h=hand();g.hand=h;update(2000);h[8]={x:.42,y:.65};update(2250);update(2300);assert.equal(hits,2,'Bending the pointing finger did not press');
+pointer.update({gestures:g,video:{},viewport:{},hidden:true,now:2400});assert(pointer.cursor.hidden);assert.equal(pointer.target,null);
+g.hand=hand();target.disabled=true;update(3000);assert.equal(pointer.target,null,'Disabled control became clickable');target.disabled=false;
+g.hand=hand();for(const tip of [12,16,20]){g.hand[tip]={x:.5,y:.25};g.hand[tip-2]={x:.5,y:.5}}update(4000);assert.equal(pointer.target,null,'Open palm was treated as a pointing finger');
+console.log('Hand pointer: target highlight, pinch/press, held suppression, classifier ownership, hidden/disabled controls and palm exclusion passed.');

@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+let serial=0;const timers=new Map(),recognizers=[];let wakes=0,finals=0;
+const scope=vm.createContext({console,performance,Date,setTimeout:fn=>{timers.set(++serial,fn);return serial},clearTimeout:id=>timers.delete(id)});
+vm.runInContext(fs.readFileSync('src/voiceGate.js','utf8').replace(/export (class|function) /g,'$1 '),scope);
+vm.runInContext(fs.readFileSync('src/wakeWord.js','utf8').replace(/^import .*;\r?\n/gm,'').replace(/export (class|function) /g,'$1 ')+';this.Wake=WakeWordListener',scope);
+const listener=new scope.Wake({onWake:()=>wakes++});listener.model={KaldiRecognizer:class{constructor(){this.events={};recognizers.push(this)}on(name,fn){this.events[name]=fn}remove(){}retrieveFinalResult(){finals++;this.events.result({result:{text:'mirror mirror'}})}}};
+listener.enabled=true;listener.setBackgroundPlayback(true);listener._createRecognizer();let r=recognizers.at(-1);
+r.events.partialresult({result:{partial:'mirror mirror'}});assert.equal(wakes,0,'Music partial woke without a finalized result');assert.equal(timers.size,1);
+r.events.partialresult({result:{partial:'mirror mirror'}});assert.equal(timers.size,1,'Stable partial postponed finalization');const settle=[...timers.values()][0];settle();assert.equal(finals,1);assert.equal(wakes,1,'Stable music wake was not finalized');
+listener.enabled=true;listener._createRecognizer();r=recognizers.at(-1);r.events.partialresult({result:{partial:'mirror miracle'}});assert.equal(timers.size,0,'Near phrase forced a wake finalization');
+r.events.partialresult({result:{partial:'mirror mirror'}});const retired=[...timers.values()][0];listener.setBackgroundPlayback(false);retired();assert.equal(finals,1,'Music endpoint survived disabling playback');
+listener.setBackgroundPlayback(true);r.events.partialresult({result:{partial:'mirror mirror'}});listener.setAssistantActive(true);for(const callback of [...timers.values()])callback();assert.equal(finals,1,'Music endpoint bypassed active-conversation guard');
+console.log('Music wake: stable exact phrase requests decoder finalization; partials/near phrases stay asleep; playback/recognizer/active-session ownership passed.');
